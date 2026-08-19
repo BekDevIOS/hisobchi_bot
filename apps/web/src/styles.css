@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: #172033; background: #f7f8fa; }
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; }
+button, input, select { font: inherit; }
+button { cursor: pointer; }
+.card, .account-card, .transaction-row, .metric { @apply rounded-2xl bg-white p-4 shadow-sm; }
+.hero-card { @apply rounded-3xl bg-gradient-to-br from-indigo-600 to-violet-600 p-5 text-white shadow-lg shadow-indigo-200; }
+.balance-pill { @apply flex min-w-[8.5rem] flex-1 flex-col rounded-2xl bg-white/15 p-3 backdrop-blur; }
+.balance-pill span { @apply text-xs text-indigo-100; } .balance-pill strong { @apply mt-1 text-sm; }
+.section { @apply mt-7; } .section-title { @apply mb-3 flex items-center justify-between; } .section-title h2 { @apply text-base font-bold; } .section-title button { @apply text-xs font-semibold text-indigo-600; }
+.metric { @apply flex flex-col gap-2; } .metric strong { @apply text-sm; } .positive { @apply text-emerald-600; } .negative { @apply text-rose-600; }
+.muted { @apply text-slate-500; } .error { @apply text-sm text-rose-600; } .avatar { @apply grid h-10 w-10 place-items-center rounded-full bg-indigo-100 font-bold text-indigo-600; }
+.icon-box { @apply grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-slate-100 text-lg; } .transaction-row { @apply flex items-center gap-3 p-3; }
+.progress { @apply mt-2 h-1.5 overflow-hidden rounded-full bg-slate-100; } .progress i { @apply block h-full rounded-full bg-indigo-500; }
+.account-card { @apply flex items-center justify-between; } .fab { @apply fixed bottom-20 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 rounded-full bg-indigo-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-200; }
+.bottom-nav { @apply fixed bottom-0 left-1/2 z-20 flex w-full max-w-lg -translate-x-1/2 justify-around border-t border-slate-200 bg-white/95 px-2 pb-[env(safe-area-inset-bottom)] pt-2 backdrop-blur; } .bottom-nav button { @apply flex flex-col items-center gap-1 px-3 py-1 text-[10px] text-slate-400; } .bottom-nav button.active { @apply text-indigo-600; }
+.modal-wrap { @apply fixed inset-0 z-30 flex items-end justify-center bg-slate-950/30 p-3; } .modal { @apply w-full max-w-lg space-y-3 rounded-3xl bg-white p-5 shadow-2xl; } .modal input, .modal select, label input, label select { @apply mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm outline-none focus:border-indigo-500; } .modal label, label { @apply block text-sm font-medium; } .primary { @apply w-full rounded-xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white disabled:opacity-50; } .choice { @apply rounded-xl border border-slate-200 p-3 text-sm; } .choice.active { @apply border-indigo-500 bg-indigo-50 text-indigo-700; }

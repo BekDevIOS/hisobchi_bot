@@ -1,0 +1,19 @@
+{
+  "name": "hisobchi-bot",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@9.15.5",
+  "scripts": {
+    "dev": "pnpm --parallel --filter @hisobchi/api --filter @hisobchi/bot --filter @hisobchi/web dev",
+    "build": "pnpm prisma:generate && pnpm -r build",
+    "test": "pnpm prisma:generate && pnpm --filter @hisobchi/api test",
+    "test:watch": "pnpm --filter @hisobchi/api test:watch",
+    "lint": "pnpm prisma:generate && pnpm -r lint",
+    "prisma:generate": "pnpm --filter @hisobchi/api prisma:generate",
+    "prisma:migrate": "pnpm --filter @hisobchi/api prisma:migrate",
+    "prisma:seed": "pnpm --filter @hisobchi/api prisma:seed"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}

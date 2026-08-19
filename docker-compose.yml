@@ -1,0 +1,65 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-hisobchi}
+      POSTGRES_USER: ${POSTGRES_USER:-hisobchi}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-hisobchi} -d ${POSTGRES_DB:-hisobchi}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    command: ["sh", "-c", "pnpm --filter @hisobchi/api prisma:migrate:deploy && pnpm --filter @hisobchi/api prisma:seed && node apps/api/dist/main.js"]
+  bot:
+    build:
+      context: .
+      dockerfile: apps/bot/Dockerfile
+    env_file: .env
+    environment:
+      API_URL: http://api:3000
+      BOT_MODE: ${BOT_MODE:-polling}
+    depends_on:
+      - api
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        VITE_API_URL: ${API_URL:-http://localhost:3000}
+    depends_on:
+      - api
+  nginx:
+    image: nginx:1.27-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/certbot:/var/www/certbot:ro
+      - ./nginx/letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      - api
+      - bot
+      - web
+
+volumes:
+  postgres_data:
+  redis_data:

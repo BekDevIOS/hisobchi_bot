@@ -1,0 +1,120 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Currency {
+  UZS
+  KRW
+  USD
+}
+
+enum AccountType {
+  CASH
+  CARD
+  BANK
+  SAVINGS
+  OTHER
+}
+
+enum CategoryType {
+  INCOME
+  EXPENSE
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+  TRANSFER
+}
+
+enum TransactionSource {
+  BOT
+  WEB
+  AI
+  SYSTEM
+}
+
+model User {
+  id           String        @id @default(uuid()) @db.Uuid
+  telegramId   String        @unique
+  username     String?
+  firstName    String
+  lastName     String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  settings     UserSettings?
+  accounts     Account[]
+  categories   Category[]
+  transactions Transaction[]
+}
+
+model UserSettings {
+  id              String   @id @default(uuid()) @db.Uuid
+  userId          String   @unique @db.Uuid
+  defaultCurrency Currency @default(UZS)
+  language        String   @default("uz")
+  timezone        String   @default("Asia/Seoul")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Account {
+  id             String        @id @default(uuid()) @db.Uuid
+  userId         String        @db.Uuid
+  name           String
+  type           AccountType   @default(CASH)
+  currency       Currency
+  initialBalance Decimal       @default(0) @db.Decimal(20, 4)
+  isActive       Boolean       @default(true)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions   Transaction[]
+
+  @@index([userId, isActive])
+}
+
+model Category {
+  id           String          @id @default(uuid()) @db.Uuid
+  userId       String?         @db.Uuid
+  name         String
+  slug         String
+  icon         String
+  type         CategoryType
+  isSystem     Boolean         @default(false)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  user         User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@index([userId, slug, type])
+  @@index([type, isSystem])
+}
+
+model Transaction {
+  id              String            @id @default(uuid()) @db.Uuid
+  userId          String            @db.Uuid
+  accountId       String            @db.Uuid
+  categoryId      String            @db.Uuid
+  type            TransactionType
+  amount          Decimal           @db.Decimal(20, 4)
+  currency        Currency
+  description     String
+  transactionDate DateTime
+  source          TransactionSource @default(WEB)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account         Account           @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  category        Category          @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  @@index([userId, transactionDate])
+  @@index([accountId, transactionDate])
+  @@index([userId, type])
+}

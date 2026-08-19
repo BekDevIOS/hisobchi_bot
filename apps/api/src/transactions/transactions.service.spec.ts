@@ -1,0 +1,12 @@
+import { BadRequestException } from '@nestjs/common';
+import { TransactionType } from '@prisma/client';
+import { TransactionsService } from './transactions.service';
+
+describe('TransactionsService validation', () => {
+  const prisma = { account: { findFirst: jest.fn() }, category: { findFirst: jest.fn() }, userSettings: { findUnique: jest.fn() }, transaction: { create: jest.fn(), findFirst: jest.fn() } } as unknown as { account: { findFirst: jest.Mock }; category: { findFirst: jest.Mock }; userSettings: { findUnique: jest.Mock }; transaction: { create: jest.Mock; findFirst: jest.Mock } };
+  const categories = { findForUser: jest.fn() } as never; const parser = {} as never; const ai = { isEnabled: () => false } as never; const service = new TransactionsService(prisma as never, categories, parser, ai);
+  it('rejects zero amount', async () => { await expect(service.create('user', { type: TransactionType.EXPENSE, amount: '0', accountId: '00000000-0000-0000-0000-000000000000', categoryId: '00000000-0000-0000-0000-000000000001', description: 'bad' })).rejects.toBeInstanceOf(BadRequestException); });
+  it('rejects an account that is not owned by the authenticated user', async () => { prisma.account.findFirst = jest.fn().mockResolvedValue(null); await expect(service.create('user-a', { type: TransactionType.EXPENSE, amount: '10', accountId: '00000000-0000-0000-0000-000000000000', categoryId: '00000000-0000-0000-0000-000000000001', description: 'cross-user' })).rejects.toThrow('Account does not belong to the user'); });
+  it('rejects a category whose type does not match', async () => { prisma.account.findFirst = jest.fn().mockResolvedValue({ id: 'account', currency: 'UZS' }); prisma.category.findFirst = jest.fn().mockResolvedValue(null); await expect(service.create('user-a', { type: TransactionType.EXPENSE, amount: '10', accountId: '00000000-0000-0000-0000-000000000000', categoryId: '00000000-0000-0000-0000-000000000001', description: 'wrong category' })).rejects.toThrow('Category does not match'); });
+  it('cannot read another user\'s transaction', async () => { prisma.transaction.findFirst = jest.fn().mockResolvedValue(null); await expect(service.get('user-a', '00000000-0000-0000-0000-000000000002')).rejects.toThrow('Transaction not found'); expect(prisma.transaction.findFirst).toHaveBeenCalledWith(expect.objectContaining({ where: { id: '00000000-0000-0000-0000-000000000002', userId: 'user-a' } })); });
+});
